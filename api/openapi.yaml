@@ -1,0 +1,261 @@
+openapi: 3.0.1
+info:
+  title: Datahost - Lund Biodiversity data
+  description: API for biodiversity data - Lund datasets
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: mathieu.blanchet@biol.lu.se
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+externalDocs:
+  description: Find out more about Swagger
+  url: http://swagger.io
+servers:
+- url: http://localhost:8084
+- url: http://canmmove-dev.ekol.lu.se:8084/
+tags:
+- name: occurence
+  description: Occurences from gbif.org
+  externalDocs:
+    description: GBIF.org examples
+    url: https://www.gbif.org/occurrence/search?occurrence_status=present&q=
+- name: event
+  description: Events from gbif.org
+paths:
+  /events/{eventId}:
+    get:
+      tags:
+      - event
+      summary: Find event by ID
+      description: Returns a single event
+      operationId: getEventById
+      parameters:
+      - name: eventId
+        in: path
+        description: ID of event to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Occurence'
+        "400":
+          description: Invalid ID supplied
+          content: {}
+        "404":
+          description: Event not found
+          content: {}
+      x-swagger-router-controller: Event
+  /occurences/{occurenceId}:
+    get:
+      tags:
+      - occurence
+      summary: Find occurence by ID
+      description: Returns a single occurence
+      operationId: getOccurenceById
+      parameters:
+      - name: occurenceId
+        in: path
+        description: ID of occurence to return
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Occurence'
+        "400":
+          description: Invalid ID supplied
+          content: {}
+        "404":
+          description: Occurence not found
+          content: {}
+      x-swagger-router-controller: Occurence
+  /occurences:
+    get:
+      tags:
+      - occurence
+      summary: Find occurences using several optionnal parameters
+      description: Returns an array of occurences
+      operationId: getOccurences
+      parameters:
+      - in: query
+        name: scientificName
+        description: occurences with matching scientificName
+        required: false
+        style: pipeDelimited
+        explode: false
+        schema:
+          type: string
+      - in: query
+        name: taxonID
+        description: occurences with matching taxonID. A list (pipe separated |) can be provided 
+        required: false
+        style: pipeDelimited
+        explode: false
+        schema:
+          type: string
+      - in: query
+        name: county
+        description: occurences with matching counties. A list (pipe separated |) can be provided
+        required: false
+        style: pipeDelimited
+        explode: false
+        schema:
+          type: string
+      - in: query
+        name: startDate
+        description: occurences with matching startDate. Using ">= startDate"
+        required: false
+        explode: false
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: endDate
+        description: occurences with matching endDate. Using "<= endDate"
+        required: false
+        explode: false
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: format
+        description: specify the output format
+        schema:
+          type: string
+          enum: [json, csv]
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Occurence'
+            text/csv:
+              schema:
+                $ref: '#/components/schemas/Occurence'
+        "400":
+          description: Wrong query (I guess)
+          content: {}
+        "404":
+          description: Error not found
+          content: {}
+      x-swagger-router-controller: Occurence
+components:
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+        eventID:
+          type: string
+        samplingProtocol:
+          type: string
+        eventDate:
+          type: string
+          format: date-time
+        eventTime:
+          type: string
+          format: date-time
+        locationID:
+          type: integer
+          format: int32
+        countryCode:
+          type: string
+        county:
+          type: string
+        decimalLatitude:
+          type: number
+          format: float
+        decimalLongitude:
+          type: number
+          format: float
+        geodaticDatum:
+          type: string
+      example:
+        id: SFTstd:19960527:116
+        eventID: SFTstd:19960527:116
+        samplingProtocol: http://www.fageltaxering.lu.se/inventera/metoder/standardrutter/metodik-standardrutter
+        eventDate: {}
+        eventTime: 03:55:00
+        locationID: 116
+        countryCode: SE
+        county: Västra Götalands län
+        decimalLatitude: 58.432
+        decimalLongitude: 11.31
+        geodeticDatum: WGS84
+      xml:
+        name: Event
+    Occurence:
+      type: object
+      properties:
+        id:
+          type: string
+        basisOfRecord:
+          type: string
+        occurrenceID:
+          type: string
+        recordedBy:
+          type: integer
+          format: int32
+        individualCount:
+          type: integer
+          format: int32
+        eventID:
+          type: string
+        taxonID:
+          type: integer
+          format: int32
+        scientificName:
+          type: string
+        kingdom:
+          type: string
+        genus:
+          type: string
+        specificEpithet:
+          type: string
+        taxonRank:
+          type: string
+      example:
+        id: SFTstd:19960523:143,
+        basisOfRecord: HumanObservation,
+        occurrenceID: SFTstd:19960523:143:100138:l,
+        recordedBy: 441,
+        individualCoun : 1,
+        eventID: SFTstd:19960523:143,
+        taxonID: 100138,
+        scientificName: Tetrao urogallus,
+        kingdom: Animalia,
+        genus: Tetrao,
+        specificEpithet: urogallus,
+        taxonRank: species
+      xml:
+        name: Occurence
+  securitySchemes:
+    petstore_auth:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: http://petstore.swagger.io/oauth/dialog
+          scopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
